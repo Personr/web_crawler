@@ -16,6 +16,12 @@
             <java.version>1.8</java.version>
     </properties>
     
+<repositories>
+    <repository>
+        <id>maven-repository</id>
+        <url>file://${project.basedir}/maven-repository</url>
+    </repository>
+</repositories>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -26,9 +32,7 @@
 <dependency>
 	<groupId>edu.upenn.cis.cis455</groupId>
 	<artifactId>homework-1</artifactId>
-	<version>1.0</version>
-	<scope>system</scope>
-	<systemPath>${basedir}/lib/homework-1-1.0-SNAPSHOT.jar</systemPath>
+	<version>1.0-SNAPSHOT</version>
 </dependency>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
         <dependency>
@@ -121,7 +125,7 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
+           <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
               <version>1.6.0</version>
