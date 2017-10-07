@@ -1,4 +1,4 @@
-package edu.upenn.cis455.storage;
+package edu.upenn.cis.cis455.storage;
 
 import com.sleepycat.je.Environment;
 import com.sleepycat.persist.EntityStore;

@@ -1,4 +1,4 @@
-package edu.upenn.cis455;
+package edu.upenn.cis.cis455;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

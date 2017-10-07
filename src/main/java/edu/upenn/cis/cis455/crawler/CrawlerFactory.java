@@ -1,4 +1,4 @@
-package edu.upenn.cis455.crawler;
+package edu.upenn.cis.cis455.crawler;
 
 public class CrawlerFactory {
 	public Crawler getCrawler() {

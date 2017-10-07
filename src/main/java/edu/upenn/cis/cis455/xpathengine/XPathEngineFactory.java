@@ -1,4 +1,4 @@
-package edu.upenn.cis455.xpathengine;
+package edu.upenn.cis.cis455.xpathengine;
 
 import org.xml.sax.helpers.DefaultHandler;
 
