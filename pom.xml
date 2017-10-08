@@ -23,17 +23,28 @@
     </repository>
 </repositories>
     <dependencies>
+    <!--
+<dependency>
+	<groupId>edu.upenn.cis.cis455</groupId>
+	<artifactId>homework-1</artifactId>
+	<version>1.0-SNAPSHOT</version>
+</dependency>
+-->
+<!-- https://mvnrepository.com/artifact/com.sparkjava/spark-core -->
+<dependency>
+    <groupId>com.sparkjava</groupId>
+    <artifactId>spark-core</artifactId>
+    <version>2.6.0</version>
+</dependency>
+
+
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-<dependency>
-	<groupId>edu.upenn.cis.cis455</groupId>
-	<artifactId>homework-1</artifactId>
-	<version>1.0-SNAPSHOT</version>
-</dependency>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -101,13 +112,6 @@
             <version>2.9.1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -152,6 +156,7 @@
                 <mainClass>edu.upenn.cis.cis455.crawler.WebInterface</mainClass>
                 <arguments>
                   <argument>./database</argument>
+                  <argument>/projects/555-hw2/www</argument>
                 </arguments>
               </configuration>
             </plugin>
