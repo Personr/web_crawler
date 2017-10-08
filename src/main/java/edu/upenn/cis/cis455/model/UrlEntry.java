@@ -2,21 +2,21 @@ package edu.upenn.cis.cis455.model;
 
 import java.io.Serializable;
 
-public class CorpusEntry implements Serializable {
+public class UrlEntry implements Serializable {
     Integer docId;
-    String content;
+    String url;
     
     public Integer getDocId() {
         return docId;
     }
     
-    public String getContent() {
-        return content;
+    public String getUrl() {
+        return url;
     }
     
-    public CorpusEntry(Integer docId, String content) {
+    public UrlEntry(Integer docId, String url) {
         this.docId = docId;
-        this.content = content;
+        this.url = url;
     }
     
     @Override
@@ -29,6 +29,6 @@ public class CorpusEntry implements Serializable {
         if (!(o instanceof CorpusEntry))
             return false;
             
-        return ((CorpusEntry)o).docId.equals(docId);
+        return ((UrlEntry)o).docId.equals(docId);
     }
 }
