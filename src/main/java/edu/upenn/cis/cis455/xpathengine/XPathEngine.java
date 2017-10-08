@@ -1,9 +1,6 @@
 package edu.upenn.cis.cis455.xpathengine;
 
-import java.io.InputStream;
-
-import org.w3c.dom.Document;
-import org.xml.sax.helpers.DefaultHandler;
+import edu.upenn.cis.cis455.model.OccurrenceEvent;
 
 interface XPathEngine {
 
@@ -22,41 +19,17 @@ interface XPathEngine {
 	 * @return
 	 */
 	boolean isValid(int i);
-
+	
 	/**
-	 * Returns true if the implementation is a SAX rather than DOM parser.
-	 * i.e., the caller should call evaluateSAX rather than evaluate.
+	 * Event driven pattern match.
 	 * 
-	 * @return
-	 */
-	boolean isSAX();
-
-	/**
-	 * DOM Parser evaluation.
-	 * Takes a DOM root node as its argument, which contains the representation of the 
-	 * HTML or XML document. Returns an array of the same length as the 'expressions'
-	 * argument to setXPaths(), with the i.th element set to true if the document 
-	 * matches the i.th XPath expression, and false otherwise. If setXPaths() has not
-	 * yet been called, the return value is undefined.
+	 * Takes an event at a time as input
 	 *
-	 * @param d Document root node
-	 * @return bit vector of matches
-	 */
-	boolean[] evaluate(Document d);
-
-	/**
-	 * SAX parser evaluation. (Optional extra credit.)
+	 * @param event notification about something parsed, from a
+	 * given document
 	 * 
-	 * Takes a stream as input, as well as a Handler produced by the
-	 * XPathEngineFactory.   Returns an array of the same length as the 'expressions'
-	 * argument to setXPaths(), with the i.th element set to true if the document 
-	 * matches the i.th XPath expression, and false otherwise. If setXPaths() has not
-	 * yet been called, the return value is undefined.
-	 * 
-	 * @param document Document stream
-	 * @param handler SAX handler implementation (from factory)
-	 * @return bit vector of matches
+ 	 * @return bit vector of matches to XPaths
 	 */
-	boolean[] evaluateSAX(InputStream document, DefaultHandler handler);
+	boolean[] evaluateEvent(OccurrenceEvent event);
 
 }
