@@ -26,33 +26,33 @@ import org.apache.logging.log4j.LogManager;
 import edu.upenn.cis.stormlite.bolt.IRichBolt;
 
 /**
- * Does round-robin among the destination bolts
+ * Indicates that we should broadcast to all children
  * 
  * @author zives
  *
  */
-public class RoundRobin extends IStreamRouter {
-	static Logger log = LogManager.getLogger(RoundRobin.class);
+public class Broadcast extends IStreamRouter {
+	static Logger log = LogManager.getLogger(Broadcast.class);
 	
 	int inx = 0;
 	List<IRichBolt> children;
 	
-	public RoundRobin() {
+	public Broadcast() {
 		children = new ArrayList<IRichBolt>();
 	}
 	
-	public RoundRobin(IRichBolt child) {
+	public Broadcast(IRichBolt child) {
 		children = new ArrayList<IRichBolt>();
 		children.add(child);
 	}
 	
-	public RoundRobin(List<IRichBolt> children) {
+	public Broadcast(List<IRichBolt> children) {
 		this.children = children;
 	}
 	
 
 	/**
-	 * Round-robin through the bolts
+	 * Broadcast to all of the bolts
 	 * 
 	 */
 	@Override
@@ -63,15 +63,7 @@ public class RoundRobin extends IStreamRouter {
 			return null;
 		}
 		
-		IRichBolt bolt = getBolts().get(inx);
-		
-		inx = (inx + 1) % getBolts().size();
-
-		log.debug("Routing " + tuple.toString() + " to " + bolt.getExecutorId());
-		
-        List<IRichBolt> bolts = new ArrayList<>();
-        bolts.add(bolt);
-		return bolts;
+		return getBolts();
 	}
 
 

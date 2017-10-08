@@ -19,6 +19,7 @@ package edu.upenn.cis.stormlite.bolt;
 
 import java.io.Serializable;
 
+import edu.upenn.cis.stormlite.routers.Broadcast;
 import edu.upenn.cis.stormlite.routers.FieldBased;
 import edu.upenn.cis.stormlite.routers.IStreamRouter;
 import edu.upenn.cis.stormlite.routers.RoundRobin;
@@ -35,6 +36,7 @@ public class BoltDeclarer implements Serializable {
 	
 	public static final String SHUFFLE = "shuffle";
 	public static final String FIELDS = "fields";
+	public static final String ALL = "all";
 	
 	/**
 	 * The stream ID
@@ -114,6 +116,16 @@ public class BoltDeclarer implements Serializable {
 	}
 
 	/**
+	 * Broadcast
+	 * 
+	 * @param key The stream name
+	 */
+	public void allGrouping(String key) {
+		this.stream = key;
+		setType(ALL);
+	}
+
+	/**
 	 * Partition (shard) by fields
 	 * 
 	 * @param key The stream name
@@ -142,6 +154,8 @@ public class BoltDeclarer implements Serializable {
 				// the indices within the schema of the stream
 			} else if (getType().equals(FIELDS)) {
 				router = new FieldBased(shardFields);
+			} else if (getType().equals(ALL)) {
+			    router = new Broadcast();
 			}
 		
 		return router;

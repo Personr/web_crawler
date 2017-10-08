@@ -50,7 +50,7 @@ public class FieldBased extends IStreamRouter {
 	/**
 	 * Determines which bolt to route tuples to
 	 */
-	public IRichBolt getBoltFor(List<Object> tuple) {
+	public List<IRichBolt> getBoltsFor(List<Object> tuple) {
 		
 		int hash = 0;
 		
@@ -64,7 +64,9 @@ public class FieldBased extends IStreamRouter {
 		if (hash < 0)
 			hash = hash + getBolts().size();
 
-		return getBolts().get(hash);
+        List<IRichBolt> bolts = new ArrayList<>();
+        bolts.add(getBolts().get(hash));
+		return bolts;
 	}
 
 	/**

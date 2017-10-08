@@ -63,12 +63,12 @@ public abstract class IStreamRouter implements OutputFieldsDeclarer {
 
 	
 	/**
-	 * The selector for the destination bolt
+	 * The selector for the destination bolt(s)
 	 * 
 	 * @param tuple
 	 * @return
 	 */
-	protected abstract IRichBolt getBoltFor(List<Object> tuple);
+	protected abstract List<IRichBolt> getBoltsFor(List<Object> tuple);
 	
 	/**
 	 * The destination bolts, as a list
@@ -87,11 +87,12 @@ public abstract class IStreamRouter implements OutputFieldsDeclarer {
 	 * @param tuple
 	 */
 	public synchronized void execute(List<Object> tuple, TopologyContext context) {
-		IRichBolt bolt = getBoltFor(tuple);
+		List<IRichBolt> bolts = getBoltsFor(tuple);
 		
-		if (bolt != null)
-			context.addStreamTask(new BoltTask(bolt, new Tuple(schema, tuple)));
-		else
+		if (bolts != null && !bolts.isEmpty()) {
+		    for (IRichBolt bolt: bolts)
+			 context.addStreamTask(new BoltTask(bolt, new Tuple(schema, tuple)));
+		} else
 			throw new RuntimeException("Unable to find a bolt for the tuple");
 	}
 	
