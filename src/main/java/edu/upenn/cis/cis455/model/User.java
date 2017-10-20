@@ -6,12 +6,16 @@ public class User implements Serializable {
     Integer userId;
     String userName;
     String password;
+    String firstName;
+    String lastName;
     
     
-    public User(Integer userId, String userName, String password) {
+    public User(Integer userId, String userName, String password, String firstName, String lastName) {
         this.userId = userId;
         this.userName = userName;
         this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
     
     public Integer getUserId() {
@@ -24,5 +28,13 @@ public class User implements Serializable {
     
     public String getPassword() {
         return password;
+    }
+    
+    public String getFirstName() {
+        return firstName;
+    }
+    
+    public String getLastName() {
+        return lastName;
     }
 }

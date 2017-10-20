@@ -1,5 +1,7 @@
 package edu.upenn.cis.cis455.crawler.handlers;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import spark.Request;
 import spark.Route;
 import spark.Response;
@@ -18,14 +20,16 @@ public class LoginHandler implements Route {
     public String handle(Request req, Response resp) throws HaltException {
         String user = req.queryParams("username");
         String pass = req.queryParams("password");
+        String sha256Pass = DigestUtils.sha256Hex(pass);
         
         System.err.println("Login request for " + user + " and " + pass);
-        if (db.getSessionForUser(user, pass)) {
+        if (db.getSessionForUser(user, sha256Pass)) {
             System.err.println("Logged in!");
             Session session = req.session();
             
             session.attribute("user", user);
-            session.attribute("password", pass);
+            session.attribute("password", sha256Pass);
+            session.maxInactiveInterval(300);
             resp.redirect("/index.html");
         } else {
             System.err.println("Invalid credentials");

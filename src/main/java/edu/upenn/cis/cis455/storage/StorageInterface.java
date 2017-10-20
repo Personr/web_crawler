@@ -25,15 +25,19 @@ public interface StorageInterface {
 	/**
 	 * Adds a user and returns an ID
 	 */
-	public int addUser(String username, String password);
+	public int addUser(String username, String password, String firstName, String lastName);
 	
 	/**
 	 * Tries to log in the user, or else throws a HaltException
 	 */
 	public boolean getSessionForUser(String username, String password);
 	
+	public boolean usernameTaken(String username);
+	
 	/**
 	 * Retrieves a document's contents by URL
 	 */
 	public String getDocument(String url);
+	
+	public void close();
 }

@@ -70,6 +70,7 @@ public class DBWrapper implements StorageInterface {
         
         DatabaseConfig dbConfig = new DatabaseConfig();
         dbConfig.setAllowCreate(true);
+        dbConfig.setTransactional(true);
         
         Database catalogDb = myEnv.openDatabase(null, CLASS_CATALOG, 
                                               dbConfig);
@@ -106,6 +107,7 @@ public class DBWrapper implements StorageInterface {
 	    invertedIndex = new StoredSortedMap<Integer,KeywordEntry>(urlDb, intBinding, keywordBinding, true);
 	}
 	
+	@Override
 	public void close()
         throws DatabaseException
     {
@@ -174,10 +176,10 @@ public class DBWrapper implements StorageInterface {
 //    }
 
     @Override
-    public int addUser(String username, String password) {
+    public int addUser(String username, String password, String firstName, String lastName) {
         int next = userMap.size();
         
-        userMap.put(username, new User(next, username, password));
+        userMap.put(username, new User(next, username, password, firstName, lastName));
         return next;
     }
 
@@ -188,6 +190,11 @@ public class DBWrapper implements StorageInterface {
             return true;
         else
             return false;
+    }
+    
+    @Override
+    public boolean usernameTaken(String username) {
+        return userMap.get(username) != null;
     }
 	
 }

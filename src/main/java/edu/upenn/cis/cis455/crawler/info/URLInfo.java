@@ -4,6 +4,7 @@ public class URLInfo {
 	private String hostName;
 	private int portNo;
 	private String filePath;
+	private boolean secure;
 	
 	/**
 	 * Constructor called with raw URL as input - parses URL to obtain host name and file path
@@ -12,10 +13,22 @@ public class URLInfo {
 		if(docURL == null || docURL.equals(""))
 			return;
 		docURL = docURL.trim();
-		if(!docURL.startsWith("http://") || docURL.length() < 8)
-			return;
-		// Stripping off 'http://'
-		docURL = docURL.substring(7);
+		int startLength = 0;
+        if (docURL.startsWith("http://")) {
+            startLength = 7;
+            secure = false;
+        } else if (docURL.startsWith("https://")) {
+            startLength = 8;
+            secure = true;
+        } else {
+            return;
+        }
+        if (docURL.length() <= startLength) {
+            return;
+        }
+        // Stripping off 'http://' or 'https://'
+        docURL = docURL.substring(startLength);
+        
 		/*If starting with 'www.' , stripping that off too
 		if(docURL.startsWith("www."))
 			docURL = docURL.substring(4);*/
@@ -47,16 +60,18 @@ public class URLInfo {
 		}
 	}
 	
-	public URLInfo(String hostName, String filePath){
+	public URLInfo(String hostName, String filePath, boolean secure){
 		this.hostName = hostName;
 		this.filePath = filePath;
 		this.portNo = 80;
+		this.secure = secure;
 	}
 	
-	public URLInfo(String hostName,int portNo,String filePath){
+	public URLInfo(String hostName,int portNo,String filePath, boolean secure){
 		this.hostName = hostName;
 		this.portNo = portNo;
 		this.filePath = filePath;
+		this.secure = secure;
 	}
 	
 	public String getHostName(){
@@ -81,6 +96,15 @@ public class URLInfo {
 	
 	public void setFilePath(String fp){
 		filePath = fp;
+	}
+	
+	public boolean isSecure() {
+	    return secure;
+	}
+	
+	@Override
+	public String toString(){
+	    return (secure ? "https" : "http") + "://" + hostName + ":" + portNo + "/" + filePath;
 	}
 	
 }
