@@ -1,5 +1,9 @@
 package edu.upenn.cis.cis455.crawler;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -72,36 +76,67 @@ public class Crawler implements CrawlMaster {
         if (!robots.containsKey(site)) {
             try {
                 System.out.println("Site: " + site);
-                URL url = new URL(isSecure ? "https://" : "http://" + site + ":" + port+ "/robots.txt");
-                
+                String urlString = (isSecure ? "https://" : "http://") + site + ((port != 80) ? ":" + port : "") + "/robots.txt";
+                URL url = new URL(urlString);
+                InputStream stream = null;
                 if (isSecure) {
-                    HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
-                    conn.disconnect();
+                    HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
+                    connection.setRequestProperty("User-Agent", "cis455crawler");
+                    stream = connection.getInputStream();
                 } else {
-                    HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-                    conn.disconnect();
+                    URLInfo info = new URLInfo(urlString);
+                    HttpClient connection = new HttpClient(info);
+                    stream = connection.sendRequest("GET", null);
                 }
                 
                 RobotsTxtInfo robot = new RobotsTxtInfo();
-                
-                // TOOD: fetch, parse
-                
+
+                String line;
+                BufferedReader rd = new BufferedReader(new InputStreamReader(stream));
+                try {
+                    String userAgent = "";
+                    while ((line = rd.readLine()) != null) {
+                        if (line.startsWith("User-agent:")) {
+                            userAgent = line.replace("User-agent: ", "");
+                            robot.addUserAgent(userAgent);
+                        } else if (userAgent.equals("*") || userAgent.equals("cis455crawler")) {
+                            if (line.startsWith("Disallow:")) {
+                                robot.addDisallowedLink(userAgent, line.replace("Disallow: ", ""));
+                            } else if (line.startsWith("Allow:")) {
+                                robot.addAllowedLink(userAgent, line.replace("Allow: ", ""));
+                            } else if (line.startsWith("Crawl-delay:")) {
+                                robot.addCrawlDelay(userAgent, Integer.valueOf(line.replace("Crawl-delay: ", "")));
+                            } else if (line.startsWith("Sitemap:")) {
+                                robot.addSitemapLink(line.replace("Sitemap: ", ""));
+                            }
+                        }
+                    }
+                    rd.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 robots.put(site, robot);
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
         } 
-        return robots.get(site) == null || (robots.get(site).getDisallowedLinks("*") == null ||
-            !robots.get(site).getDisallowedLinks("*").contains("/")) ||
-            (robots.get(site).getDisallowedLinks("cis455crawler") == null ||
-            !robots.get(site).getDisallowedLinks("cis455crawler").contains("/"));
+        if (robots.get(site) == null) {
+            return true;
+        } else {
+            return robots.get(site).isOk("/");
+        }
     }
 
     @Override
-    public boolean isOKtoParse(URLInfo url) {
-        return true;
+    public boolean isOKtoParse(String site, URLInfo url) {
+        if (robots.get(site) == null) {
+            return true;
+        } else {
+            return robots.get(site).isOk(url.getFilePath());
+        }
     }
     
     @Override
@@ -158,7 +193,9 @@ public class Crawler implements CrawlMaster {
     
     @Override
     public void notifyThreadExited() {
-        shutdown++;
+        synchronized(this) {
+            shutdown++;
+        }
     }
     
     /**
@@ -216,7 +253,6 @@ public class Crawler implements CrawlMaster {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             

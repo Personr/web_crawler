@@ -36,7 +36,6 @@ public class CrawlWorker extends Thread {
         do {
             try {
                 String url = siteQueue.take();
-                
                 if (url != null) {
                     master.setWorking(true);
                     crawl(url, urlQueue, siteQueue);
@@ -48,7 +47,6 @@ public class CrawlWorker extends Thread {
             }
 
         } while (!master.isDone());
-        //System.out.println("ouioui");
         master.notifyThreadExited();
     }
     
@@ -72,7 +70,7 @@ public class CrawlWorker extends Thread {
                     if (master.deferCrawl(site)) {
                         urlsFromSite.add(0, info.toString());
                         siteQueue.add(site);
-                    } else if (master.isOKtoParse(info)) {
+                    } else if (master.isOKtoParse(site, info)) {
                         if (master.isNotSeen(info)) {
                             HeadInfo headInfo = master.getHeadInfo(info);
                             if (headInfo == null) {
@@ -114,10 +112,8 @@ public class CrawlWorker extends Thread {
                 break;
             }
         }  while (!master.isDone());
-        //System.out.println("oui");
 
         if (parseUrl || parseFromDb) {
-            //System.out.println("ouiiiiiiiiiii");
             master.incCount();
             //crawled++;
 

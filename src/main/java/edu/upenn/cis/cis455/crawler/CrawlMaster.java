@@ -18,7 +18,7 @@ public interface CrawlMaster {
      * Returns true if it's permissible to fetch the content,
      * eg that it satisfies the path restrictions from robots.txt
      */
-    public boolean isOKtoParse(URLInfo url);
+    public boolean isOKtoParse(String site, URLInfo url);
     
     /**
      * Returns true if this url hasn't been crawled during this crawl

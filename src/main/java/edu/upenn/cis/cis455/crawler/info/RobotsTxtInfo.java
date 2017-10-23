@@ -103,4 +103,12 @@ public class RobotsTxtInfo {
 	public boolean crawlContainAgent(String key){
 		return crawlDelays.containsKey(key);
 	}
+	
+	public boolean isOk(String path) {
+	    boolean generalDisallowed = getDisallowedLinks("*") != null && getDisallowedLinks("*").contains(path);
+        boolean specificDisallowed = getDisallowedLinks("cis455crawler") != null && getDisallowedLinks("cis455crawler").contains(path);
+        boolean specificAllowed = getAllowedLinks("cis455crawler") != null && getAllowedLinks("cis455crawler").contains(path);
+            
+        return specificAllowed || !(generalDisallowed || specificDisallowed);
+	}
 }
