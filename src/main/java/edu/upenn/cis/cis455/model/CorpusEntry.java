@@ -19,6 +19,10 @@ public class CorpusEntry implements Serializable {
         this.content = content;
     }
     
+    public void setContent(String content) {
+        this.content = content;
+    }
+    
     @Override
     public int hashCode() {
         return docId.hashCode();

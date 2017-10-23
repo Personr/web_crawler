@@ -1,6 +1,8 @@
 package edu.upenn.cis.cis455.storage;
 
 import java.io.File;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,14 +134,42 @@ public class DBWrapper implements StorageInterface {
 	}
 	
 	@Override
+	public void modifyDocument(String url, String document) {
+	    Integer docId = invUrls.get(url);
+	    
+	    CorpusEntry ce = corpus.get(docId);
+	    ce.setContent(document);
+	    
+	    ZonedDateTime dateTime = ZonedDateTime.now();
+        String date = dateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
+	    UrlEntry ue = urls.get(docId);
+	    ue.setLastModified(date);
+	}
+	
+	@Override
 	public int addDocument(String url, String document) {
-	    int docId = getCorpusSize() + 1;
-	    
-	    corpus.put(docId, new CorpusEntry(docId, document));
-	    urls.put(docId, new UrlEntry(docId, url));
-	    invUrls.put(url, docId);
-	    
+	    int docId;
+        synchronized (this) {
+            docId = getCorpusSize() + 1;
+            ZonedDateTime dateTime = ZonedDateTime.now();
+            String date = dateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
+
+            corpus.put(docId, new CorpusEntry(docId, document));
+            urls.put(docId, new UrlEntry(docId, url, date));
+            invUrls.put(url, docId);
+        }
+
 	    return docId;
+	}
+	
+	@Override
+	public String getDocumentLastModified(String url) {
+	    Integer docId = invUrls.get(url);
+	    
+	    if (docId == null)
+	       return null;
+	    else
+	       return urls.get(docId).getLastModified();
 	}
 	
 	@Override

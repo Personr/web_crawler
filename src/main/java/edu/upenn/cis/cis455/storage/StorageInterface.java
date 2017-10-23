@@ -8,9 +8,20 @@ public interface StorageInterface {
 	public int getCorpusSize();
 	
 	/**
+	 * Changes the content of a document (updates the last modified date)
+	 */
+	public void modifyDocument(String url, String document);
+	
+	/**
 	 * Add a new document, getting its ID
 	 */
 	public int addDocument(String url, String documentContents);
+	
+	/**
+	 * Returns date corresponding to the last time the document has been modified
+	 * Returns null if the document is not present
+	 */
+	public String getDocumentLastModified(String url);
 	
 	/**
 	 * How many keywords so far?

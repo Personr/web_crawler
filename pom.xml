@@ -147,9 +147,10 @@
                 <mainClass>edu.upenn.cis.cis455.crawler.Crawler</mainClass>
                 <arguments>
                   <argument>https://dbappserv.cis.upenn.edu/crawltest.html</argument>
+                  <!--<argument>http://www.bbc.com/</argument>-->
                   <argument>./database</argument>
                   <argument>1</argument>
-                  <argument>10</argument>
+                  <argument>20</argument>
                 </arguments>
               </configuration>
               </execution>

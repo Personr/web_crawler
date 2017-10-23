@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class UrlEntry implements Serializable {
     Integer docId;
     String url;
+    String lastModified;
     
     public Integer getDocId() {
         return docId;
@@ -14,9 +15,18 @@ public class UrlEntry implements Serializable {
         return url;
     }
     
-    public UrlEntry(Integer docId, String url) {
+    public String getLastModified() {
+        return lastModified;
+    }
+    
+    public UrlEntry(Integer docId, String url, String lastModified) {
         this.docId = docId;
         this.url = url;
+        this.lastModified = lastModified;
+    }
+    
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
     }
     
     @Override

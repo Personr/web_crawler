@@ -1,5 +1,7 @@
 package edu.upenn.cis.cis455.crawler.info;
 
+import edu.upenn.cis.cis455.crawler.HeadInfo;
+
 public class URLInfo {
 	private String hostName;
 	private int portNo;
@@ -104,7 +106,7 @@ public class URLInfo {
 	
 	@Override
 	public String toString(){
-	    return (secure ? "https" : "http") + "://" + hostName + ":" + portNo + "/" + filePath;
+	    return (secure ? "https" : "http") + "://" + hostName + (portNo != 80 ? ":" + portNo : "") + filePath;
 	}
 	
 }

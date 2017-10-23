@@ -4,8 +4,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,6 +37,8 @@ public class Crawler implements CrawlMaster {
     Map<String,List<String>> urlQueue = new HashMap<>();
     // Last-crawled info for delays
     Map<String,Integer> lastCrawled = new HashMap<>();
+    Set<String> crawledUrls = new HashSet<String>();
+    Map<String, HeadInfo> urlHeads = new HashMap<>();
     
     public Crawler(String startUrl, StorageInterface db, int size, int count) {
         this.startUrl = startUrl;
@@ -53,6 +57,7 @@ public class Crawler implements CrawlMaster {
         // Launch 10 workers
         for (int i = 0; i < NUM_WORKERS; i++) {
             CrawlWorker worker = new CrawlWorker(db, siteQueue, urlQueue, this);
+            workers.add(worker);
             worker.start();
         }
         System.out.println("Crawling started");
@@ -97,6 +102,42 @@ public class Crawler implements CrawlMaster {
     @Override
     public boolean isOKtoParse(URLInfo url) {
         return true;
+    }
+    
+    @Override
+    public boolean isNotSeen(URLInfo url) {
+        return !crawledUrls.contains(url.toString());
+    }
+
+    @Override
+    public void setSeen(URLInfo url) {
+        crawledUrls.add(url.toString());
+        
+    }
+    
+    @Override
+    public HeadInfo getHeadInfo(URLInfo url) {
+        return urlHeads.get(url.toString());
+    }
+    
+    @Override
+    public void setHeadInfo(URLInfo url, HeadInfo headInfo) {
+        urlHeads.put(url.toString(), headInfo);
+    }
+    
+    @Override
+    public boolean checkHeadInfo(URLInfo url) {
+        HeadInfo headInfo = urlHeads.get(url.toString());
+        int contentLength = headInfo.getContentLength();
+        String contentType = headInfo.getContentType();
+        return contentLength != -1 && contentLength <= size * 1000000 && 
+               (contentType.contains("text/html") || contentType.contains("text/xml") || contentType.contains("application/xml") || contentType.contains("+xml"));
+    }
+    
+    @Override
+    public boolean shouldDownload(URLInfo url) {
+        HeadInfo headInfo = urlHeads.get(url.toString());
+        return headInfo.getModified();
     }
 
     @Override
