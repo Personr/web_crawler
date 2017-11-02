@@ -27,6 +27,8 @@ public class OccurrenceEvent extends Tuple {
         getValues().add(docId);
         getValues().add(type);
         getValues().add(value);
+        
+        checkCardinality();
     }
     
     public String getDocId() {

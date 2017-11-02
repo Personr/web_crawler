@@ -16,9 +16,14 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.net.ssl.HttpsURLConnection;
 
 public class CrawlWorker extends Thread {
+    final static Logger logger = LogManager.getLogger(CrawlWorker.class);
+    
     BlockingQueue<String> siteQueue;
     Map<String,List<String>> urlQueue;
     final CrawlMaster master;
@@ -62,19 +67,24 @@ public class CrawlWorker extends Thread {
             
             if (urlsFromSite != null && !urlsFromSite.isEmpty()) {
                 info = new URLInfo(urlsFromSite.remove(0));
-                System.out.println("Unqueued " + info.toString());
+                logger.debug("Unqueued " + info.toString());
                     
                 if (master.isOKtoCrawl(site, info.getPortNo(), info.isSecure())) {
+                    logger.debug("Ok to crawl: " + site);
                     // If we need to defer the crawl, put the URL back in its list
                     // and move the site to the back of the crawl queue
                     if (master.deferCrawl(site)) {
+                        logger.debug("Crawl defered");
                         urlsFromSite.add(0, info.toString());
                         siteQueue.add(site);
                     } else if (master.isOKtoParse(site, info)) {
+                        logger.debug("Ok to parse");
                         if (master.isNotSeen(info)) {
+                            logger.debug("Not seen during this crawl");
                             HeadInfo headInfo = master.getHeadInfo(info);
                             if (headInfo == null) {
-                                System.out.println("Setting head info " + info.toString());
+                                logger.debug("Setting head info");
+                                master.setAccessTime(site);
                                 String lastModified = db.getDocumentLastModified(info.toString());
                                 if (info.isSecure()) {
                                     headInfo = HttpClient.getHeadInfoSecured(info, lastModified);
@@ -89,6 +99,8 @@ public class CrawlWorker extends Thread {
                                 if (master.shouldDownload(info)) {
                                     if (master.checkHeadInfo(info)) {
                                         parseUrl = true;
+                                    } else {
+                                        logger.debug("Wrong head info");
                                     }
                                 } else {
                                     parseFromDb = true;
@@ -114,6 +126,8 @@ public class CrawlWorker extends Thread {
         }  while (!master.isDone());
 
         if (parseUrl || parseFromDb) {
+            master.setAccessTime(site);
+            
             master.incCount();
             //crawled++;
 
@@ -153,28 +167,19 @@ public class CrawlWorker extends Thread {
     }
     
     public void parseFromDb(URLInfo info) {
-        System.out.println("Parsing from db " + info.toString());
+        logger.info(info.toString() + ": Not modified");
         String content = db.getDocument(info.toString());
         BufferedReader rd = new BufferedReader(new StringReader(content));
         parseText(info, rd, false);
     }
     
     public void parseUrl(URLInfo info) {
-        System.out.println("Parsing url " + info.toString());
+        logger.info(info.toString() + ": Downloading");
 
         try {
             URL url = new URL(info.toString());
             
-            InputStream stream = null;
-            
-            if (info.isSecure()) {
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-                connection.setRequestProperty("User-Agent", "cis455crawler");
-                stream = connection.getInputStream();
-            } else {
-                HttpClient connection = new HttpClient(info);
-                stream = connection.sendRequest("GET", null);
-            }           
+            InputStream stream = HttpClient.downloadPage(info, url);       
             BufferedReader rd = new BufferedReader(new InputStreamReader(stream));
             String response = parseText(info, rd, !info.isSecure());
             indexText(info.toString(), response);

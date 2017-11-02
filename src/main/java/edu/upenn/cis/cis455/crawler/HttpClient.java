@@ -58,7 +58,6 @@ public class HttpClient {
         return null;
     }
     
-    @SuppressWarnings("finally")
     private static HeadInfo parseHeadResponse(BufferedReader rd) {
         String contentType = "";
         int contentLength = -1;
@@ -87,9 +86,8 @@ public class HttpClient {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            return new HeadInfo(contentType, contentLength, true);
         }
+        return new HeadInfo(contentType, contentLength, true);
     }
     
     public HeadInfo getHeadInfo(String lastModified) {
@@ -115,6 +113,18 @@ public class HttpClient {
             return null;
         }   
         
+    }
+    
+    public static InputStream downloadPage(URLInfo info, URL url) throws IOException {
+        if (info.isSecure()) {
+            HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
+            connection.setRequestProperty("User-Agent", "cis455crawler");
+            connection.setInstanceFollowRedirects(false);
+            return connection.getInputStream();
+        } else {
+            HttpClient connection = new HttpClient(info);
+            return connection.sendRequest("GET", null);
+        }
     }
     
 }

@@ -1,6 +1,7 @@
 package edu.upenn.cis.cis455.crawler;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,6 +16,9 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.net.ssl.HttpsURLConnection;
 
 import edu.upenn.cis.cis455.crawler.info.RobotsTxtInfo;
@@ -24,6 +28,7 @@ import edu.upenn.cis.cis455.storage.StorageInterface;
 
 
 public class Crawler implements CrawlMaster {
+    final static Logger logger = LogManager.getLogger(Crawler.class);
     static final int NUM_WORKERS = 10;
     
     final String startUrl;
@@ -35,6 +40,7 @@ public class Crawler implements CrawlMaster {
     int busy = 0;
     
     Map<String, RobotsTxtInfo> robots = new HashMap<>();
+    Map<String, Long> accessTimes = new HashMap<>();
     List<CrawlWorker> workers = new ArrayList<>();
     
     BlockingQueue<String> siteQueue = new LinkedBlockingQueue<>();
@@ -64,30 +70,40 @@ public class Crawler implements CrawlMaster {
             workers.add(worker);
             worker.start();
         }
-        System.out.println("Crawling started");
+        logger.info("Crawling started");
+    }
+    
+    @Override
+    public void setAccessTime(String site) {
+        //accessTimes.put(site, System.currentTimeMillis());
     }
     
     public boolean deferCrawl(String site) {
-        return false;
+        Long lastAccessTime = accessTimes.get(site);
+        if (lastAccessTime == null) {
+            return false;
+        }
+        RobotsTxtInfo robot = robots.get(site);
+        if (robot == null) {
+            return false;
+        }
+        Integer crawlDelay = robot.getCrawlDelay("cis455crawler");
+        if (crawlDelay == null) {
+            return false;
+        }
+        return System.currentTimeMillis() - accessTimes.get(site) < 1000 * crawlDelay;
     }
     
     @Override
     public boolean isOKtoCrawl(String site, int port, boolean isSecure) {
         if (!robots.containsKey(site)) {
+            setAccessTime(site);
             try {
-                System.out.println("Site: " + site);
+                logger.debug("Downloading robots.txt for: " + site);
                 String urlString = (isSecure ? "https://" : "http://") + site + ((port != 80) ? ":" + port : "") + "/robots.txt";
                 URL url = new URL(urlString);
-                InputStream stream = null;
-                if (isSecure) {
-                    HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
-                    connection.setRequestProperty("User-Agent", "cis455crawler");
-                    stream = connection.getInputStream();
-                } else {
-                    URLInfo info = new URLInfo(urlString);
-                    HttpClient connection = new HttpClient(info);
-                    stream = connection.sendRequest("GET", null);
-                }
+                URLInfo info = new URLInfo(urlString);
+                InputStream stream = HttpClient.downloadPage(info, url);  
                 
                 RobotsTxtInfo robot = new RobotsTxtInfo();
 
@@ -96,7 +112,10 @@ public class Crawler implements CrawlMaster {
                 try {
                     String userAgent = "";
                     while ((line = rd.readLine()) != null) {
-                        if (line.startsWith("User-agent:")) {
+                        if (line.startsWith("Location:")) { //Handle redirect
+                            urlString = line.replace("Location: ", "");
+                            rd = new BufferedReader(new InputStreamReader(HttpClient.downloadPage(new URLInfo(urlString), new URL(urlString))));
+                        } else if (line.startsWith("User-agent:")) {
                             userAgent = line.replace("User-agent: ", "");
                             robot.addUserAgent(userAgent);
                         } else if (userAgent.equals("*") || userAgent.equals("cis455crawler")) {
@@ -115,9 +134,8 @@ public class Crawler implements CrawlMaster {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 robots.put(site, robot);
-
+                logger.debug("Robots.txt downloaded");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -163,6 +181,7 @@ public class Crawler implements CrawlMaster {
     @Override
     public boolean checkHeadInfo(URLInfo url) {
         HeadInfo headInfo = urlHeads.get(url.toString());
+        logger.debug(headInfo);
         int contentLength = headInfo.getContentLength();
         String contentType = headInfo.getContentType();
         return contentLength != -1 && contentLength <= size * 1000000 && 
@@ -177,7 +196,6 @@ public class Crawler implements CrawlMaster {
 
     @Override
     public void incCount() {
-        System.out.print(".");
         crawled++;
     }
 
@@ -209,7 +227,7 @@ public class Crawler implements CrawlMaster {
                 e.printStackTrace();
             }
         }
-        System.out.println("Threads are all shut down");
+        logger.info("Threads are all shut down");
     }
     
     public void close() {
@@ -236,7 +254,7 @@ public class Crawler implements CrawlMaster {
             System.exit(1);
         }
         
-        System.out.println("Crawler starting");
+        logger.info("Crawler starting");
         String startUrl = args[0];
         String envPath = args[1];
         Integer size = Integer.valueOf(args[2]);
@@ -246,7 +264,7 @@ public class Crawler implements CrawlMaster {
         
         Crawler crawler = new Crawler(startUrl, db, size, count);
         
-        System.out.println("Starting crawl of " + count + " documents, starting at " + startUrl);
+        logger.info("Starting crawl of " + count + " documents, starting at " + startUrl);
         crawler.start();
         
         while (!crawler.isDone())
@@ -258,7 +276,7 @@ public class Crawler implements CrawlMaster {
             
         crawler.waitForThreadsToEnd();
         crawler.close();
-        System.out.println("Done crawling!");
+        logger.info("Done crawling!");
     }
 
 }

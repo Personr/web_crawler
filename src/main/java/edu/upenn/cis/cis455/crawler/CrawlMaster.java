@@ -31,6 +31,11 @@ public interface CrawlMaster {
     public void setSeen(URLInfo url);
     
     /**
+     * Updates the last access time of a website
+     */
+    public void setAccessTime(String site);
+    
+    /**
      * Returns true if the headInfo for this url
      * Returns null if no head request has been sent for this url
      */

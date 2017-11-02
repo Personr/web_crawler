@@ -63,6 +63,10 @@ public class DBWrapper implements StorageInterface {
 	
 	public DBWrapper(String envDirectory) {
 	    this.envDirectory = envDirectory;
+	    File dir = new File(envDirectory);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
 	    
 	    EnvironmentConfig envConfig = new EnvironmentConfig();
         envConfig.setTransactional(true);
@@ -139,11 +143,13 @@ public class DBWrapper implements StorageInterface {
 	    
 	    CorpusEntry ce = corpus.get(docId);
 	    ce.setContent(document);
+	    corpus.put(docId, ce);
 	    
 	    ZonedDateTime dateTime = ZonedDateTime.now();
         String date = dateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
 	    UrlEntry ue = urls.get(docId);
 	    ue.setLastModified(date);
+	    urls.put(docId, ue);
 	}
 	
 	@Override

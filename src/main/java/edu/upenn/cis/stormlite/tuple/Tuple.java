@@ -39,9 +39,11 @@ public class Tuple {
 	public Tuple(Fields fields2, List<Object> tuple) {
 		fields = fields2;
 		
-		values = tuple;
-		
-		if (fields != null && fields.size() != values.size())
+		values = tuple;		
+	}
+	
+	protected void checkCardinality() {
+	    if (fields != null && fields.size() != values.size())
 			throw new IllegalArgumentException("Cardinality mismatch between fields and values");
 	}
 

@@ -7,9 +7,15 @@ Configuration:
       target: SYSTEM_OUT
       PatternLayout:
         Pattern: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
+    File:
+      name: File
+      fileName: 555-hw2/logfile.log
+      PatternLayout:
+        pattern: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
 
   Loggers:
     Root:
-      level: error
+      level: info
       AppenderRef:
-        ref: Console
+        ref: Console   
+    
