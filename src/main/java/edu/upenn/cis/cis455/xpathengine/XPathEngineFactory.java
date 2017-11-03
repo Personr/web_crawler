@@ -11,8 +11,11 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class XPathEngineFactory {
+    
+    private static XPathEngine xpath = new XPathEngineImpl();
+    
 	public static XPathEngine getXPathEngine() {
-		return new XPathEngineImpl();
+		return xpath;
 	}
 	
 	public static DefaultHandler getSAXHandler() {
